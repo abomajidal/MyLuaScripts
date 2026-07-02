@@ -1,5 +1,38 @@
+-- تعريف العناصر
+local button = script.Parent
 local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
 
-humanoid.WalkSpeed = 20
+-- إعدادات السرعة
+local normalSpeed = 16  -- السرعة الطبيعية في روبلوكس
+local fastSpeed = 50    -- السرعة العالية (يمكنك تغييرها كما تحب)
+
+-- متغير لحفظ حالة السرعة (هل هي مفعلة أم لا)
+local isSpeedEnabled = false
+
+-- الدالة التي تتحكم في تشغيل وإطفاء السرعة
+local function toggleSpeed()
+	-- التأكد من أن شخصية اللاعب موجودة في اللعبة
+	local character = player.Character or player.CharacterAdded:Wait()
+	local humanoid = character:WaitForChild("Humanoid")
+	
+	if not isSpeedEnabled then
+		-- تشغيل السرعة
+		humanoid.WalkSpeed = fastSpeed
+		isSpeedEnabled = true
+		button.Text = "إيقاف السرعة: مفعلة"
+		button.BackgroundColor3 = Color3.fromRGB(46, 204, 113) -- تغيير لون الزر للأخضر
+	else
+		-- إطفاء السرعة وإعادتها للطبيعي
+		humanoid.WalkSpeed = normalSpeed
+		isSpeedEnabled = false
+		button.Text = "تشغيل السرعة: معطلة"
+		button.BackgroundColor3 = Color3.fromRGB(231, 76, 60) -- تغيير لون الزر للأحمر
+	end
+end
+
+-- ربط الدالة بزر الضغط
+button.MouseButton1Click:Connect(toggleSpeed)
+
+-- إعداد الشكل المبدئي للزر عند بدء اللعبة
+button.Text = "تشغيل السرعة: معطلة"
+button.BackgroundColor3 = Color3.fromRGB(231, 76, 60)
