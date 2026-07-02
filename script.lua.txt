@@ -1,38 +1,67 @@
--- تعريف العناصر
-local button = script.Parent
+-- إنشاء الواجهة تلقائياً في شاشة اللاعب
+local ScreenGui = Instance.new("ScreenGui")
+local Frame = Instance.new("Frame")
+local TextButton = Instance.new("TextButton")
+local UICorner = Instance.new("UICorner")
+local ButtonCorner = Instance.new("UICorner")
+
+-- إعدادات الشاشة (تأمين عدم حذف الواجهة عند الموت)
+ScreenGui.Parent = game:GetService("CoreGui") or game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+
+-- تصميم القائمة الرئيسية (Frame)
+Frame.Parent = ScreenGui
+Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- لون رمادي غامق
+Frame.Position = UDim2.new(0.05, 0, 0.4, 0) -- مكان القائمة على الشاشة (يسار المنتصف)
+Frame.Size = UDim2.new(0, 200, 0, 80)
+Frame.Active = true
+Frame.Draggable = true -- يمكنك سحب القائمة وتحريكها بالماوس/اللمس
+
+UICorner.Parent = Frame
+UICorner.CornerRadius = UDim.new(0, 10)
+
+-- تصميم زر التشغيل والإطفاء
+TextButton.Parent = Frame
+TextButton.BackgroundColor3 = Color3.fromRGB(231, 76, 60) -- أحمر (معطل)
+TextButton.Position = UDim2.new(0.05, 0, 0.15, 0)
+TextButton.Size = UDim2.new(0, 190, 0, 50)
+TextButton.Font = Enum.Font.SourceSansBold
+TextButton.Text = "تشغيل السرعة: معطلة"
+TextButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextButton.TextSize = 18
+
+ButtonCorner.Parent = TextButton
+ButtonCorner.CornerRadius = UDim.new(0, 8)
+
+-- منطق تسريع اللاعب
 local player = game.Players.LocalPlayer
-
--- إعدادات السرعة
-local normalSpeed = 16  -- السرعة الطبيعية في روبلوكس
-local fastSpeed = 50    -- السرعة العالية (يمكنك تغييرها كما تحب)
-
--- متغير لحفظ حالة السرعة (هل هي مفعلة أم لا)
+local normalSpeed = 16
+local fastSpeed = 60 -- يمكنك تعديل السرعة من هنا
 local isSpeedEnabled = false
 
--- الدالة التي تتحكم في تشغيل وإطفاء السرعة
-local function toggleSpeed()
-	-- التأكد من أن شخصية اللاعب موجودة في اللعبة
-	local character = player.Character or player.CharacterAdded:Wait()
-	local humanoid = character:WaitForChild("Humanoid")
-	
-	if not isSpeedEnabled then
-		-- تشغيل السرعة
-		humanoid.WalkSpeed = fastSpeed
-		isSpeedEnabled = true
-		button.Text = "إيقاف السرعة: مفعلة"
-		button.BackgroundColor3 = Color3.fromRGB(46, 204, 113) -- تغيير لون الزر للأخضر
-	else
-		-- إطفاء السرعة وإعادتها للطبيعي
-		humanoid.WalkSpeed = normalSpeed
-		isSpeedEnabled = false
-		button.Text = "تشغيل السرعة: معطلة"
-		button.BackgroundColor3 = Color3.fromRGB(231, 76, 60) -- تغيير لون الزر للأحمر
-	end
-end
+-- حلقة تكرارية للتأكد من استمرار السرعة حتى لو مات اللاعب ورسبن من جديد
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        if isSpeedEnabled and player.Character and player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid.WalkSpeed = fastSpeed
+        end
+    end
+end)
 
--- ربط الدالة بزر الضغط
-button.MouseButton1Click:Connect(toggleSpeed)
-
--- إعداد الشكل المبدئي للزر عند بدء اللعبة
-button.Text = "تشغيل السرعة: معطلة"
-button.BackgroundColor3 = Color3.fromRGB(231, 76, 60)
+-- دالة الضغط على الزر
+TextButton.MouseButton1Click:Connect(function()
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        if not isSpeedEnabled then
+            isSpeedEnabled = true
+            player.Character.Humanoid.WalkSpeed = fastSpeed
+            TextButton.Text = "إيقاف السرعة: مفعلة"
+            TextButton.BackgroundColor3 = Color3.fromRGB(46, 204, 113) -- أخضر
+        else
+            isSpeedEnabled = false
+            player.Character.Humanoid.WalkSpeed = normalSpeed
+            TextButton.Text = "تشغيل السرعة: معطلة"
+            TextButton.BackgroundColor3 = Color3.fromRGB(231, 76, 60) -- أحمر
+        end
+    end
+end)
